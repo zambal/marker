@@ -12,7 +12,8 @@ defprotocol Marker.Encoder do
 
   The following types are implemented by default:
 
-  `Integer`, `Float`, `Atom`, `Tuple`, `BitString` and `Marker.Element`
+  `Integer`, `Float`, `Atom`, `Tuple`, `BitString` 'Date', 'DateTime',
+  'NaiveDateTime' and `Marker.Element`
 
   You can easily implement a protocol implementation for a custom
   type, by defining an `encode` function that receives the custom type
@@ -25,7 +26,7 @@ defprotocol Marker.Encoder do
       ...> end
       iex> defimpl Marker.Encoder, for: Customer do
       ...>   def encode(%Customer{name: name, email: email, phone: phone}) do
-      ...>     use Marker.HTML
+      ...>     use Marker
       ...>
       ...>     div class: "customer" do
       ...>       div [span("name: "), span(name)]

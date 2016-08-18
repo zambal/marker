@@ -1,4 +1,21 @@
 defmodule Marker.Compiler do
+  @moduledoc """
+  `Marker.Compiler` renders the element macros to html. It tries do as much work during macro expansion,
+  resulting in a run time performance comparible to precompiled templates.
+
+  For example, this element call:
+
+  ```elixir
+  div 1 + 1
+  ```
+
+  will be expanded to this:
+
+  ```elixir
+  "<div>" <> Marker.Encoder.encode(1 + 1) <> "</div>"
+  ```
+  """
+
   alias Marker.Element
 
   @type element :: String.t | Macro.t | Marker.Element.t
@@ -6,11 +23,13 @@ defmodule Marker.Compiler do
 
   # API
 
+  @doc false
   @spec compile(Marker.content, Macro.Env.t) :: { :safe, String.t } | Macro.t
   def compile(content, env) do
     compile(content, env, []) |> to_result()
   end
 
+  @doc false
   @spec escape(String.t) :: String.t
   def escape(string) do
     escape(string, "")

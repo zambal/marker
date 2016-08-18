@@ -27,7 +27,7 @@ end
 "<!doctype html>\n<html><body><div><h3>Person</h3><p class='name'>Vincent</p><p class='age'>38</p></div></body></html>"}
 ```
 
-  `Marker` escapes all strings by default. In order to prevent an already escaped result from being escaped again when passed as an argument to another element, compiled results are wrapped in a `{:safe, ...}` tuple to mark the result as escaped. The Phoenix framework uses this idiom too.
+  `Marker` escapes all strings by default. In order to prevent an already escaped result from being escaped again when passed as an argument to another element, compiled results are wrapped in a `{:safe, ...}` tuple to mark the result as escaped. The Phoenix framework uses this idiom too. Besides escaping strings, `Marker` provides the `Marker.Encoder` protocol for encoding terms to one of Markers internal data types. See the protocol documentation for more info.
 
   `Marker` is very flexible with the arguments you can pass to its element macro's:
 
