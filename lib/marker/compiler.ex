@@ -73,13 +73,14 @@ defmodule Marker.Compiler do
     end)
   end
 
+  @quote "'"
+
   @spec attr(chunks, atom, Marker.Encoder.t, Macro.Env.t) :: chunks
   defp attr(chunks, field, value, env) do
-    qt = "'"
     chunks
-    |> add_chunk(" #{attr_field(field)}=#{qt}")
+    |> add_chunk(" #{attr_field(field)}=#{@quote}")
     |> attr_value(value, env)
-    |> add_chunk(qt)
+    |> add_chunk(@quote)
   end
 
   @spec enabled_attr(chunks, atom) :: chunks
