@@ -22,7 +22,7 @@ end
 
   The above will result in:
 
-``elixir
+```elixir
 :safe,
 "<!doctype html>\n<html><body><div><h3>Person</h3><p class='name'>Vincent</p><p class='age'>38</p></div></body></html>"}
 ```
