@@ -52,27 +52,6 @@ defimpl Marker.Encoder, for: Marker.Element do
   def encode(value), do: value
 end
 
-defimpl Marker.Encoder, for: Integer do
-  def encode(value), do: Integer.to_string(value)
-end
-
-defimpl Marker.Encoder, for: Float do
-  def encode(value), do: Float.to_string(value)
-end
-
-defimpl Marker.Encoder, for: Atom do
-  def encode(nil),   do: ""
-  def encode(value),  do: Marker.Compiler.escape(Atom.to_string(value))
-end
-
-defimpl Marker.Encoder, for: List do
-  def encode(list) do
-    Enum.reduce(list, "", fn value, acc ->
-      acc <> Marker.Encoder.encode(value)
-    end)
-  end
-end
-
 defimpl Marker.Encoder, for: Tuple do
   def encode({ :safe, value }) when is_binary(value) do
     value
@@ -84,4 +63,37 @@ defimpl Marker.Encoder, for: Tuple do
       raise Protocol.UndefinedError, protocol: Marker.Encoder, value: value
     end
   end
+end
+
+defimpl Marker.Encoder, for: List do
+  def encode(list) do
+    Enum.reduce(list, "", fn value, acc ->
+      acc <> Marker.Encoder.encode(value)
+    end)
+  end
+end
+
+defimpl Marker.Encoder, for: Atom do
+  def encode(nil),   do: ""
+  def encode(value),  do: Marker.Compiler.escape(Atom.to_string(value))
+end
+
+defimpl Marker.Encoder, for: Integer do
+  def encode(value), do: Integer.to_string(value)
+end
+
+defimpl Marker.Encoder, for: Float do
+  def encode(value), do: Float.to_string(value)
+end
+
+defimpl Marker.Encoder, for: Date do
+  def encode(value), do: Date.to_string(value)
+end
+
+defimpl Marker.Encoder, for: DateTime do
+  def encode(value), do: DateTime.to_string(value)
+end
+
+defimpl Marker.Encoder, for: NaiveDateTime do
+  def encode(value), do: NaiveDateTime.to_string(value)
 end
