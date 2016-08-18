@@ -23,7 +23,7 @@ end
   The above will result in:
 
 ```elixir
-:safe,
+{:safe,
 "<!doctype html>\n<html><body><div><h3>Person</h3><p class='name'>Vincent</p><p class='age'>38</p></div></body></html>"}
 ```
 
@@ -169,7 +169,7 @@ defmodule MyProject.PageView do
 end
 ```
 
-    If you plan to use `Marker` for all your views, you can add the `use Marker` and `import Marker.Component` directives to the `<Project>.Web` `__using__` macro, so you don't need to specify these in every view.
+  If you plan to use `Marker` for all your views, you can add the `use Marker` and `import Marker.Component` directives to the `<Project>.Web` `__using__` macro, so you don't need to specify these in every view.
 
 ## Background
 
