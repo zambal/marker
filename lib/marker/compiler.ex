@@ -44,7 +44,7 @@ defmodule Marker.Compiler do
 
   defp compile(content, env, chunks) do
     content
-    |> Macro.expand(env)
+    |> Macro.expand_once(env)
     |> Marker.Encoder.encode()
     |> compile_element(env, chunks)
   end
@@ -56,7 +56,7 @@ defmodule Marker.Compiler do
     chunks = chunks
     |> maybe_doctype(tag)
     |> begin_tag_open(tag)
-    |> build_attrs(attrs, env)
+    |> build_attrs(attrs)
     if is_void_element?(tag) do
       void_tag_close(chunks)
     else
@@ -82,20 +82,20 @@ defmodule Marker.Compiler do
 
   # Attributes parsing
 
-  @spec build_attrs(chunks, Marker.Element.attrs, Macro.Env.t) :: chunks
-  defp build_attrs(chunks, attrs, env) when is_list(attrs) do
+  @spec build_attrs(chunks, Marker.Element.attrs) :: chunks
+  defp build_attrs(chunks, attrs) when is_list(attrs) do
     Enum.reduce(attrs, chunks, fn
       { _, nil }, chunks   -> chunks
       { _, false }, chunks -> chunks
       { k, true }, chunks  -> enabled_attr(chunks, k)
-      { k, v }, chunks     -> attr(chunks, k, v, env)
+      { k, v }, chunks     -> attr(chunks, k, v)
     end)
   end
 
-  @spec attr(chunks, atom, Marker.Encoder.t, Macro.Env.t) :: chunks
-  defp attr(chunks, field, value, env) do
+  @spec attr(chunks, atom, Marker.Encoder.t) :: chunks
+  defp attr(chunks, field, value) do
     field = attr_field(field)
-    case attr_value(value, env) do
+    case Marker.Encoder.encode(value) do
       string when is_binary(string) ->
         add_chunk(chunks, "#{field}='#{string}'")
       expr ->
@@ -106,13 +106,6 @@ defmodule Marker.Compiler do
   @spec enabled_attr(chunks, atom) :: chunks
   defp enabled_attr(chunks, field) do
     add_chunk(chunks, attr_field(field))
-  end
-
-  @spec attr_value(Marker.Encoder.t, Macro.Env.t) :: chunks
-  defp attr_value(value, env) do
-    value
-    |> Macro.expand(env)
-    |> Marker.Encoder.encode()
   end
 
   defp attr_field(field) do
