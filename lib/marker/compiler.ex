@@ -92,33 +92,33 @@ defmodule Marker.Compiler do
     end)
   end
 
-  @quote "'"
-
   @spec attr(chunks, atom, Marker.Encoder.t, Macro.Env.t) :: chunks
   defp attr(chunks, field, value, env) do
-    chunks
-    |> add_chunk(" #{attr_field(field)}=#{@quote}")
-    |> attr_value(value, env)
-    |> add_chunk(@quote)
+    field = attr_field(field)
+    case attr_value(value, env) do
+      string when is_binary(string) ->
+        add_chunk(chunks, "#{field}='#{string}'")
+      expr ->
+        add_chunk(chunks, attr_resolver(field, expr))
+    end
   end
 
   @spec enabled_attr(chunks, atom) :: chunks
   defp enabled_attr(chunks, field) do
-    add_chunk(chunks, " " <> attr_field(field))
+    add_chunk(chunks, attr_field(field))
   end
 
-  @spec attr_value(chunks, Marker.Encoder.t, Macro.Env.t) :: chunks
-  defp attr_value(chunks, value, env) do
+  @spec attr_value(Marker.Encoder.t, Macro.Env.t) :: chunks
+  defp attr_value(value, env) do
     value
     |> Macro.expand(env)
     |> Marker.Encoder.encode()
-    |> compile_element(env, chunks)
   end
 
   defp attr_field(field) do
     case Atom.to_string(field) do
-      "_" <> field -> "data-" <> field
-      field        -> field
+      "_" <> field -> " data-" <> field
+      field        -> " " <> field
     end
   end
 
@@ -145,8 +145,15 @@ defmodule Marker.Compiler do
   defp add_chunk([acc | rest], chunk) when is_binary(chunk) and is_binary(acc) do
     [acc <> chunk | rest]
   end
-  defp add_chunk(chunks, chunk) do
+  defp add_chunk(chunks, chunk) when is_binary(chunk) do
     [chunk | chunks]
+  end
+  defp add_chunk(chunks, {:safe, expr}) do
+    [expr | chunks]
+  end
+  defp add_chunk(chunks, chunk) do
+    expr = quote do: Marker.Encoder.encode(unquote(chunk))
+    [expr | chunks]
   end
 
   defp to_result([string]) when is_binary(string) do
@@ -157,15 +164,21 @@ defmodule Marker.Compiler do
   end
 
   defp concat(buffer) do
-    Enum.reduce(buffer, "", fn
-      chunk, acc when is_binary(chunk) ->
-        quote do
-          unquote(acc) <> unquote(chunk)
-        end
-      chunk, acc ->
-        quote do
-          unquote(acc) <> Marker.Encoder.encode(unquote(chunk))
-        end
+    Enum.reduce(buffer, "", fn chunk, acc ->
+      quote do
+        unquote(acc) <> unquote(chunk)
+      end
     end)
+  end
+
+  defp attr_resolver(field, expr) do
+    {:safe, quote do
+      case unquote(expr) do
+        nil   -> ""
+        false -> ""
+        true  -> unquote(field)
+        value -> unquote(field) <> "='" <> Marker.Encoder.encode(value) <> "'"
+      end
+    end}
   end
 end

@@ -16,9 +16,15 @@ defmodule Marker.Mixfile do
 
   def project do
     [app: :marker,
-     version: "1.0.1",
+     version: "1.1.1",
      elixir: "~> 1.2",
+     source_url: "https://github.com/zambal/marker",
      description: @description,
-     package: @package]
+     package: @package,
+     deps: deps()]
+  end
+
+  defp deps do
+    [{:ex_doc, ">= 0.0.0", only: :dev}]
   end
 end

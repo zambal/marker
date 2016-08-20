@@ -19,6 +19,13 @@ defmodule MarkerTest do
     assert (video autoplay: true) == {:safe, "<video autoplay></video>"}
   end
 
+  test "boolean attr expressions" do
+    t = true
+    f = false
+    assert (video autoplay: f) == {:safe, "<video></video>"}
+    assert (video autoplay: t) == {:safe, "<video autoplay></video>"}
+  end
+
   test "nested expressions" do
     name = "Vincent"
     content = html do
