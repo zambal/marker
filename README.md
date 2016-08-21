@@ -5,7 +5,7 @@
   Here's an example to give you an idea how `Marker` looks:
 
 ```elixir
-use Marker
+use Marker.HTML
 
 name = "Vincent"
 
@@ -32,8 +32,8 @@ end
   `Marker` is very flexible with the arguments you can pass to its element macro's:
 
 ```elixir
-iex> use Marker
-...> Marker
+iex> use Marker.HTML
+...> Marker.HTML
 iex> div 42
 {:safe, "<div>42</div>"}
 iex> div do: 42
@@ -57,40 +57,40 @@ iex> div class: "test" do
 
   You can basicly do anything you like with argument order, as long as attributes are always a `Keyword` literal.
 
-## Components
+## Templates and Components
 
-  `Marker` provides components as a convenient abstraction. Under the hood components define a macro, that can be called just like elements, that calls a hidden template function containing the body of the component. The component macro provides two variables: `content` and `attrs`. `content` contains expressions from the do block and is always a list. `attrs` contains the attributes and is always a map.
+  `Marker` provides templates and components as a convenient abstraction. A template is just a function with one argument. It expects a data structure that can be accessed with the `Access` protocol, like `Map` or `Keyword`. The fields of the argument can be accessed with the `@` attribute syntax. This works because templates and components provide an implementation of the `assigns` extension of `EEx` templates for easy data access. Components are like templates, but in adition to the template function, they define a macro that can be called just like the element macros. The contents of the `do` block of a component are accessable as `@__content__` in the component definition and is always wrapped in a list. A small, but important difference between templates and components is that an unavailable assign in a template raises a `RuntimeError`, as assigns are considered mandatory for templates, but they are optional for components. This makes it for example possible to define a component that optionally accepts a custom class.
 
   An example makes this all probably much easier to understand, so here are a few components that could make using Bootstrap simpler:
 
 ```elixir
 defmodule MyComponents do
   use Marker
-  import Marker.Component
 
   component :form_input do
-    custom_classes = attrs[:class] || ""
+    custom_classes = @class || ""
     div class: "form-group" do
-      label attrs[:label], for: attrs[:id]
-      input id: attrs[:id],
-            type: attrs[:type],
+      label @label, for: @id
+      input id: @id,
+            type: @type,
             class: "form-control " <> custom_classes
-            placeholder: attrs[:placeholder],
-            value: attrs[:value]
+            placeholder: @placeholder,
+            value: @value
     end
   end
 
   component :form_select do
-    custom_classes = attrs[:class] || ""
+    custom_classes = @class || ""
     div class: "form-group" do
-      label attrs[:label], for: attrs[:id]
-      select content, id: attrs[:id], class: "form-control " <> custom_classes
+      label @label, for: @id
+      select @__content__, id: @id, class: "form-control " <> custom_classes
     end
   end
 
-  def test do
+  template :test do
     html body do
-      form do
+    h1 @title
+    form do
         form_input id: "form-address", label: "Address", placeholder: "Fill in address"
         form_select id: "form-country", label: "Country", class: "country-select" do
           option "Netherlands", value: "NL"
@@ -101,6 +101,8 @@ defmodule MyComponents do
     end
   end
 end
+
+test title: "My test form"
 ```
 
   If you want to use components from another module, don't forget to `require` or `import` the module, since components are defined as macros.
@@ -152,7 +154,6 @@ end
 defmodule MyProject.PageView do
   use MyProject.Web, :view
   use Marker
-  import Marker.Component
 
   component :greeter do
     div do
@@ -169,7 +170,7 @@ defmodule MyProject.PageView do
 end
 ```
 
-  If you plan to use `Marker` for all your views, you can add the `use Marker` and `import Marker.Component` directives to the `<Project>.Web` `__using__` macro, so you don't need to specify these in every view.
+  If you plan to use `Marker` for all your views, you can add the `use Marker` directive to the `<Project>.Web` `__using__` macro, so you don't need to specify these in every view.
 
 ## Background
 

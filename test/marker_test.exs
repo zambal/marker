@@ -2,7 +2,46 @@ defmodule MarkerTest do
   use ExUnit.Case
   doctest Marker
 
-  use Marker
+  use Marker.HTML
+  import Marker, only: [component: 2]
+
+  component :form_input do
+    custom_classes = @class || ""
+    div class: "form-group" do
+      label @label, for: @id
+      input id: @id,
+            type: @type,
+            class: "form-control " <> custom_classes,
+            placeholder: @placeholder,
+            value: @value
+    end
+  end
+
+  component :form_select do
+    custom_classes = @class || ""
+    div class: "form-group" do
+      label @label, for: @id
+      select @__content__, id: @id, class: "form-control " <> custom_classes
+    end
+  end
+
+  Marker.template :my_form do
+    form class: @class do
+      form_input id: "form-address", label: "Address", placeholder: "Fill in address"
+      form_select id: "form-country", label: "Country", class: "country-select" do
+        option "Netherlands", value: "NL"
+        option "Belgium", value: "BE"
+        option "Luxembourg", value: "LU"
+      end
+    end
+  end
+
+  test "components and templates" do
+    content = my_form(class: "test")
+    assert content == {:safe, "<form class='test'><div class='form-group'><label for='form-address'>Address</label><input id='form-address' class='form-control ' placeholder='Fill in address'/></div><div class='form-group'><label for='form-country'>Country</label><select id='form-country' class='form-control country-select'><option value='NL'>Netherlands</option><option value='BE'>Belgium</option><option value='LU'>Luxembourg</option></select></div></form>"}
+    assert_raise RuntimeError, fn -> my_form(a: 12) end
+  end
+
 
   test "calling order" do
     assert div(42) == {:safe, "<div>42</div>"}

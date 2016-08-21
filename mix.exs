@@ -2,8 +2,7 @@ defmodule Marker.Mixfile do
   use Mix.Project
 
   @description """
-  Marker strives to be the most convenient tool for writing html markup in Elixir.
-  It allows writing markup with Elixir syntax, while reaching the performance of precompiled templates.
+  Small and performant library for writing HTML markup in Elixir using templates and components
   """
 
   @package [
@@ -16,7 +15,7 @@ defmodule Marker.Mixfile do
 
   def project do
     [app: :marker,
-     version: "1.1.1",
+     version: "2.0.0",
      elixir: "~> 1.2",
      source_url: "https://github.com/zambal/marker",
      description: @description,
