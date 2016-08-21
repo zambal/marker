@@ -140,7 +140,7 @@ end
 
 ```elixir
 def deps do
-  [{:marker, "~> 1.0.0"}]
+  [{:marker, "~> 2.0"}]
 end
 ```
 
@@ -155,17 +155,15 @@ defmodule MyProject.PageView do
   use MyProject.Web, :view
   use Marker
 
-  component :greeter do
+  template :greeter do
     div do
-      h3 "Hello #{attrs.name}!"
+      h3 "Hello " <> @name
       p "(from Marker)"
     end
   end
 
   def render "index.html", assigns do
-    article do
-      greeter name: "World"
-    end
+    greeter name: "World"
   end
 end
 ```
