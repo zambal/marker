@@ -170,6 +170,8 @@ end
 
   If you plan to use `Marker` for all your views, you can add the `use Marker` directive to `<YourProject>.Web.view/0`, so you don't need to specify these in every view.
 
+  A more complete example of how to use `Marker` with the Phoenix framework can be found [here](https://github.com/zambal/marker-phoenix-example)
+
 ## Background
 
   `Marker` is the successor of [Eml](https://github.com/zambal/eml). While `Eml` has many more features than `Marker`, sometimes less really is more. Apart from writing markup with Elixir syntax, `Eml` also supports parsing of HTML and provides extensive querying capabilities. However, I personally almost never used all these extra features, while writing markup had some unpleasant corner cases, fundamental to `Eml`'s design.
