@@ -168,7 +168,7 @@ defmodule MyProject.PageView do
 end
 ```
 
-  If you plan to use `Marker` for all your views, you can add the `use Marker` directive to the `<Project>.Web` `__using__` macro, so you don't need to specify these in every view.
+  If you plan to use `Marker` for all your views, you can add the `use Marker` directive to `<YourProject>.Web.view/0`, so you don't need to specify these in every view.
 
 ## Background
 
