@@ -26,7 +26,7 @@ defmodule Marker.Compiler do
   @doc false
   @spec compile(Marker.content) :: { :safe, String.t } | Macro.t
   def compile(content) do
-    compile(content, []) |> to_result()
+    content |> compile([]) |> to_result()
   end
 
   @doc false
@@ -48,7 +48,7 @@ defmodule Marker.Compiler do
     |> maybe_doctype(tag)
     |> begin_tag_open(tag)
     |> build_attrs(attrs)
-    if is_void_element?(tag) do
+    if void_element?(tag) do
       void_tag_close(chunks)
     else
       compile(content, begin_tag_close(chunks))
@@ -69,7 +69,7 @@ defmodule Marker.Compiler do
   defp maybe_doctype(chunks, :html), do: add_chunk(chunks, "<!doctype html>\n")
   defp maybe_doctype(chunks, _),     do: chunks
 
-  defp is_void_element?(tag) do
+  defp void_element?(tag) do
     tag in ~w(area base br col embed hr img input keygen link meta param source track wbr)a
   end
 
