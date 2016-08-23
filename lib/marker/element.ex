@@ -82,9 +82,9 @@ defmodule Marker.Element do
     quote bind_quoted: [tag: tag, casing: casing] do
       defmacro unquote(tag)(content_or_attrs \\ nil, maybe_content \\ nil) do
         tag = unquote(tag) |> Marker.Element.apply_casing(unquote(casing))
-        { attrs, content } = Marker.Element.normalize_args(content_or_attrs, maybe_content)
+        { attrs, content } = Marker.Element.normalize_args(content_or_attrs, maybe_content, __CALLER__)
         %Marker.Element{tag: tag, attrs: attrs, content: content}
-        |> Marker.Compiler.compile(__CALLER__)
+        |> Marker.Compiler.compile()
       end
     end
   end
@@ -128,8 +128,8 @@ defmodule Marker.Element do
   end
 
   @doc false
-  def normalize_args(content_or_attrs, maybe_content) do
-    case {content_or_attrs, maybe_content} do
+  def normalize_args(content_or_attrs, maybe_content, env) do
+    case {expand(content_or_attrs, env), expand(maybe_content, env)} do
       { [{:do, {:"__block__", _, content}}], nil } -> {[], content}
       { [{:do, content}], nil } -> {[], content}
       { [{_,_}|_] = attrs, nil } -> {attrs, nil}
@@ -142,4 +142,9 @@ defmodule Marker.Element do
         raise ArgumentError, message: "element macro received unexpected arguments"
     end
   end
+
+  defp expand(list, env) when is_list(env) do
+    for expr <- list, do: expand(expr, env)
+  end
+  defp expand(expr, env), do: Macro.expand(expr, env)
 end

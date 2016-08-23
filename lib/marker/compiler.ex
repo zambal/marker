@@ -24,9 +24,9 @@ defmodule Marker.Compiler do
   # API
 
   @doc false
-  @spec compile(Marker.content, Macro.Env.t) :: { :safe, String.t } | Macro.t
-  def compile(content, env) do
-    compile(content, env, []) |> to_result()
+  @spec compile(Marker.content) :: { :safe, String.t } | Macro.t
+  def compile(content) do
+    compile(content, []) |> to_result()
   end
 
   @doc false
@@ -37,22 +37,13 @@ defmodule Marker.Compiler do
 
   # Content parsing
 
-  @spec compile(Marker.content, Macro.Env.t, chunks) :: chunks
-  defp compile(content, env, chunks) when is_list(content) do
-    Enum.reduce(content, chunks, &compile(&1, env, &2))
+  @spec compile(Marker.content, chunks) :: chunks
+  defp compile(content, chunks) when is_list(content) do
+    Enum.reduce(content, chunks, &compile/2)
   end
 
-  defp compile(content, env, chunks) do
-    content
-    |> Macro.expand_once(env)
-    |> Marker.Encoder.encode()
-    |> compile_element(env, chunks)
-  end
-
-  # Element parsing
-
-  @spec compile_element(element, Macro.Env.t, chunks) :: chunks
-  defp compile_element(%Element{tag: tag, attrs: attrs, content: content}, env, chunks) do
+  @spec compile(element, chunks) :: chunks
+  defp compile(%Element{tag: tag, attrs: attrs, content: content}, chunks) do
     chunks = chunks
     |> maybe_doctype(tag)
     |> begin_tag_open(tag)
@@ -60,13 +51,15 @@ defmodule Marker.Compiler do
     if is_void_element?(tag) do
       void_tag_close(chunks)
     else
-      compile(content, env, begin_tag_close(chunks))
+      compile(content, begin_tag_close(chunks))
       |> end_tag(tag)
     end
   end
-  defp compile_element(element, _env, chunks) do
-    add_chunk(chunks, element)
+  defp compile(value, chunks) do
+    add_chunk(chunks, Marker.Encoder.encode(value))
   end
+
+  # Element helpers
 
   defp begin_tag_open(chunks, tag), do: add_chunk(chunks, "<#{tag}")
   defp begin_tag_close(chunks),     do: add_chunk(chunks, ">")
@@ -135,7 +128,7 @@ defmodule Marker.Compiler do
     acc
   end
 
-  defp add_chunk([acc | rest], chunk) when is_binary(chunk) and is_binary(acc) do
+  defp add_chunk([acc | rest], chunk) when is_binary(acc) and is_binary(chunk) do
     [acc <> chunk | rest]
   end
   defp add_chunk(chunks, chunk) when is_binary(chunk) do

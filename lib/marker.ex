@@ -9,7 +9,7 @@ defmodule Marker do
     block = Marker.handle_assigns(block, true)
     quote do
       defmacro unquote(name)(content_or_attrs \\ nil, maybe_content \\ nil) do
-        { attrs, content } = Marker.Element.normalize_args(content_or_attrs, maybe_content)
+        { attrs, content } = Marker.Element.normalize_args(content_or_attrs, maybe_content, __CALLER__)
         content = quote do: List.wrap(unquote(content))
         assigns = {:%{}, [], [{:__content__, content} | attrs]}
         template = unquote(template)
