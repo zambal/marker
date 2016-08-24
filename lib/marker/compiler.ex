@@ -146,15 +146,7 @@ defmodule Marker.Compiler do
     { :safe, string }
   end
   defp to_result(chunks) do
-    {:safe, concat(:lists.reverse(chunks))}
-  end
-
-  defp concat(buffer) do
-    Enum.reduce(buffer, "", fn chunk, acc ->
-      quote do
-        unquote(acc) <> unquote(chunk)
-      end
-    end)
+    {:safe, :lists.reverse(chunks)}
   end
 
   defp attr_resolver(field, expr) do

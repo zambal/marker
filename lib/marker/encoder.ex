@@ -54,7 +54,10 @@ defimpl Marker.Encoder, for: Marker.Element do
 end
 
 defimpl Marker.Encoder, for: Tuple do
-  def encode({ :safe, value }) when is_binary(value) do
+  def encode({ :safe, list }) when is_list(list) do
+    for expr <- list, do: Marker.Encoder.encode({:safe, expr})
+  end
+  def encode({ :safe, value }) do
     value
   end
   def encode(value) do
@@ -68,9 +71,7 @@ end
 
 defimpl Marker.Encoder, for: List do
   def encode(list) do
-    Enum.reduce(list, "", fn value, acc ->
-      acc <> Marker.Encoder.encode(value)
-    end)
+    for value <- list, do: Marker.Encoder.encode({:safe, value})
   end
 end
 
