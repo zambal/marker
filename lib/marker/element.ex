@@ -143,7 +143,7 @@ defmodule Marker.Element do
     end
   end
 
-  defp expand(list, env) when is_list(env) do
+  defp expand(list, env) when is_list(list) do
     for expr <- list, do: expand(expr, env)
   end
   defp expand(expr, env), do: Macro.expand(expr, env)
