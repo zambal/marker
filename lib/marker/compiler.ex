@@ -150,7 +150,7 @@ defmodule Marker.Compiler do
   end
 
   defp concat(buffer) do
-    Enum.reduce(buffer, "", fn chunk, acc ->
+    Enum.reduce(buffer, fn chunk, acc ->
       quote do
         unquote(acc) <> unquote(chunk)
       end
