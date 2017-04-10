@@ -91,6 +91,10 @@ defimpl Marker.Encoder, for: Date do
   def encode(value), do: Date.to_string(value)
 end
 
+defimpl Marker.Encoder, for: Time do
+  def encode(value), do: Time.to_string(value)
+end
+
 defimpl Marker.Encoder, for: DateTime do
   def encode(value), do: DateTime.to_string(value)
 end
