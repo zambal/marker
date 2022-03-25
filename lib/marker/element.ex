@@ -130,10 +130,10 @@ defmodule Marker.Element do
   @doc false
   def normalize_args(content_or_attrs, maybe_content, env) do
     case {expand(content_or_attrs, env), expand(maybe_content, env)} do
-      { [{:do, {:"__block__", _, content}}], nil } -> {[], content}
+      { [{:do, {:__block__, _, content}}], nil } -> {[], content}
       { [{:do, content}], nil } -> {[], content}
       { [{_,_}|_] = attrs, nil } -> {attrs, nil}
-      { [{_,_}|_] = attrs, [{:do, {:"__block__", _, content}}] } -> {attrs, content}
+      { [{_,_}|_] = attrs, [{:do, {:__block__, _, content}}] } -> {attrs, content}
       { [{_,_}|_] = attrs, [{:do, content}] } -> {attrs, content}
       { [{_,_}|_] = attrs, content } -> {attrs, content}
       { content, nil } -> {[], content}
