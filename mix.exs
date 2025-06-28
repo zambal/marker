@@ -19,7 +19,7 @@ defmodule Marker.MixProject do
         name: :marker,
         files: ~w(lib test mix.exs README.md LICENSE),
         maintainers: ["Vincent Siliakus"],
-        licenses: ["Apache 2.0"],
+        licenses: ["Apache-2.0"],
         links: %{"Github" => "https://github.com/zambal/marker"}
       ]
     ]
