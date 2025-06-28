@@ -4,8 +4,13 @@ defmodule Marker.MixProject do
   def project do
     [
       app: :marker,
-      version: "2.1.0",
+      version: "2.1.1",
       elixir: "~> 1.2",
+      start_permanent: Mix.env() == :prod,
+      deps: deps(),
+
+      # Package
+      name: "Marker",
       source_url: "https://github.com/zambal/marker",
       description: """
       Small and performant library for writing HTML markup in Elixir using templates and components
@@ -16,8 +21,7 @@ defmodule Marker.MixProject do
         maintainers: ["Vincent Siliakus"],
         licenses: ["Apache 2.0"],
         links: %{"Github" => "https://github.com/zambal/marker"}
-      ],
-      deps: deps()
+      ]
     ]
   end
 
