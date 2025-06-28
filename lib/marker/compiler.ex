@@ -18,36 +18,45 @@ defmodule Marker.Compiler do
 
   alias Marker.Element
 
-  @type element :: String.t | Macro.t | Marker.Element.t
-  @type chunks :: [String.t | Macro.t]
+  @type element :: String.t() | Macro.t() | Marker.Element.t()
+  @type chunks :: [String.t() | Macro.t()]
 
   # API
 
   @doc false
-  @spec compile(Marker.content) :: { :safe, String.t } | Macro.t
+  @spec compile(Marker.content()) :: {:safe, String.t()} | Macro.t()
   def compile(content) do
     content |> compile([]) |> to_result()
   end
 
   @doc false
-  @spec escape(String.t) :: String.t
+  @spec escape(String.t()) :: String.t()
   def escape(string) do
     escape(string, "")
   end
 
+  @doc false
+  @spec build_attribute(String.t(), Marker.Encoder.t()) :: String.t()
+  def build_attribute(_field, nil), do: ""
+  def build_attribute(_field, false), do: ""
+  def build_attribute(field, true), do: field
+  def build_attribute(field, value), do: field <> "='" <> Marker.Encoder.encode(value) <> "'"
+
   # Content parsing
 
-  @spec compile(Marker.content, chunks) :: chunks
+  @spec compile(Marker.content(), chunks) :: chunks
   defp compile(content, chunks) when is_list(content) do
     Enum.reduce(content, chunks, &compile/2)
   end
 
   @spec compile(element, chunks) :: chunks
   defp compile(%Element{tag: tag, attrs: attrs, content: content}, chunks) do
-    chunks = chunks
-    |> maybe_doctype(tag)
-    |> begin_tag_open(tag)
-    |> build_attrs(attrs)
+    chunks =
+      chunks
+      |> maybe_doctype(tag)
+      |> begin_tag_open(tag)
+      |> build_attrs(attrs)
+
     if void_element?(tag) do
       void_tag_close(chunks)
     else
@@ -55,6 +64,7 @@ defmodule Marker.Compiler do
       |> end_tag(tag)
     end
   end
+
   defp compile(value, chunks) do
     add_chunk(chunks, Marker.Encoder.encode(value))
   end
@@ -62,12 +72,12 @@ defmodule Marker.Compiler do
   # Element helpers
 
   defp begin_tag_open(chunks, tag), do: add_chunk(chunks, "<#{tag}")
-  defp begin_tag_close(chunks),     do: add_chunk(chunks, ">")
-  defp void_tag_close(chunks),      do: add_chunk(chunks, "/>")
-  defp end_tag(chunks, tag),        do: add_chunk(chunks, "</#{tag}>")
+  defp begin_tag_close(chunks), do: add_chunk(chunks, ">")
+  defp void_tag_close(chunks), do: add_chunk(chunks, "/>")
+  defp end_tag(chunks, tag), do: add_chunk(chunks, "</#{tag}>")
 
   defp maybe_doctype(chunks, :html), do: add_chunk(chunks, "<!doctype html>\n")
-  defp maybe_doctype(chunks, _),     do: chunks
+  defp maybe_doctype(chunks, _), do: chunks
 
   defp void_element?(tag) do
     tag in ~w(area base br col embed hr img input keygen link meta param source track wbr)a
@@ -75,22 +85,24 @@ defmodule Marker.Compiler do
 
   # Attributes parsing
 
-  @spec build_attrs(chunks, Marker.Element.attrs) :: chunks
+  @spec build_attrs(chunks, Marker.Element.attrs()) :: chunks
   defp build_attrs(chunks, attrs) when is_list(attrs) do
     Enum.reduce(attrs, chunks, fn
-      { _, nil }, chunks   -> chunks
-      { _, false }, chunks -> chunks
-      { k, true }, chunks  -> enabled_attr(chunks, k)
-      { k, v }, chunks     -> attr(chunks, k, v)
+      {_, nil}, chunks -> chunks
+      {_, false}, chunks -> chunks
+      {k, true}, chunks -> enabled_attr(chunks, k)
+      {k, v}, chunks -> attr(chunks, k, v)
     end)
   end
 
-  @spec attr(chunks, atom, Marker.Encoder.t) :: chunks
+  @spec attr(chunks, atom, Marker.Encoder.t()) :: chunks
   defp attr(chunks, field, value) do
     field = attr_field(field)
+
     case Marker.Encoder.encode(value) do
       string when is_binary(string) ->
         add_chunk(chunks, "#{field}='#{string}'")
+
       expr ->
         add_chunk(chunks, attr_resolver(field, expr))
     end
@@ -104,26 +116,24 @@ defmodule Marker.Compiler do
   defp attr_field(field) do
     case Atom.to_string(field) do
       "_" <> field -> " data-" <> field
-      field        -> " " <> field
+      field -> " " <> field
     end
   end
 
   # Helpers
 
-  entity_map = %{"&" => "&amp;",
-                 "<" => "&lt;",
-                 ">" => "&gt;",
-                 "\"" => "&quot;",
-                 "'" => "&#39;"}
+  entity_map = %{"&" => "&amp;", "<" => "&lt;", ">" => "&gt;", "\"" => "&quot;", "'" => "&#39;"}
 
   for {char, entity} <- entity_map do
     defp escape(unquote(char) <> rest, acc) do
       escape(rest, acc <> unquote(entity))
     end
   end
+
   defp escape(<<char::utf8, rest::binary>>, acc) do
     escape(rest, acc <> <<char::utf8>>)
   end
+
   defp escape("", acc) do
     acc
   end
@@ -131,20 +141,24 @@ defmodule Marker.Compiler do
   defp add_chunk([acc | rest], chunk) when is_binary(acc) and is_binary(chunk) do
     [acc <> chunk | rest]
   end
+
   defp add_chunk(chunks, chunk) when is_binary(chunk) do
     [chunk | chunks]
   end
+
   defp add_chunk(chunks, {:safe, expr}) do
     [expr | chunks]
   end
+
   defp add_chunk(chunks, chunk) do
     expr = quote do: Marker.Encoder.encode(unquote(chunk))
     [expr | chunks]
   end
 
   defp to_result([string]) when is_binary(string) do
-    { :safe, string }
+    {:safe, string}
   end
+
   defp to_result(chunks) do
     {:safe, concat(:lists.reverse(chunks))}
   end
@@ -158,13 +172,9 @@ defmodule Marker.Compiler do
   end
 
   defp attr_resolver(field, expr) do
-    {:safe, quote do
-      case unquote(expr) do
-        nil   -> ""
-        false -> ""
-        true  -> unquote(field)
-        value -> unquote(field) <> "='" <> Marker.Encoder.encode(value) <> "'"
-      end
-    end}
+    {:safe,
+     quote do
+       Marker.Compiler.build_attribute(unquote(field), unquote(expr))
+     end}
   end
 end

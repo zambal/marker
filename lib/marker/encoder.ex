@@ -41,7 +41,7 @@ defprotocol Marker.Encoder do
       {:safe, "<div class='customer'><div><span>name: </span><span>Fred</span></div><div><span>email: </span><span>freddy@mail.com</span></div><div><span>phone: </span><span>+31 6 5678 1234</span></div></div>"}
 
   """
-  @spec encode(Marker.Encoder.t) :: Marker.Compiler.element
+  @spec encode(Marker.Encoder.t()) :: Marker.Compiler.element()
   def encode(value)
 end
 
@@ -54,9 +54,10 @@ defimpl Marker.Encoder, for: Marker.Element do
 end
 
 defimpl Marker.Encoder, for: Tuple do
-  def encode({ :safe, value }) when is_binary(value) do
+  def encode({:safe, value}) when is_binary(value) do
     value
   end
+
   def encode(value) do
     if Macro.validate(value) == :ok do
       value
@@ -75,8 +76,8 @@ defimpl Marker.Encoder, for: List do
 end
 
 defimpl Marker.Encoder, for: Atom do
-  def encode(nil),   do: ""
-  def encode(value),  do: Marker.Compiler.escape(Atom.to_string(value))
+  def encode(nil), do: ""
+  def encode(value), do: Marker.Compiler.escape(Atom.to_string(value))
 end
 
 defimpl Marker.Encoder, for: Integer do
